@@ -10,9 +10,6 @@ raw_data = pd.read_csv('log.csv')
 data = raw_data['north_light'].values[:401]
 
 
-
-
-#test
 # Hyper Parms for the LSTM
 learning_rate = 0.0003
 n_steps = 100
