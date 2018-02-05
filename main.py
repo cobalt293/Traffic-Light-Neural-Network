@@ -2,6 +2,7 @@
 
 ###--------------------------------------------------------------------------------------
 ### Create First Batch of Training Data
+print("Create First Batch of Training Data")
 # Create the Traffic Light Simulator
 from TrafficSimulator.Core import TrafficLight
 import random
@@ -23,18 +24,25 @@ for i in range(200):
 
 ###--------------------------------------------------------------------------------------
 ### Create LSTM Model, format training data, and Train the model
-
-
+print("Create LSTM Model, format training data, and Train the model")
 # Instantiate the Data Generator class to create the training and testing data
 from TrafficLightFailoverNet.TrafficLightDataChef import TrafficLightDataChef
+
+
+
 training_data_formater = TrafficLightDataChef('log.csv', 'north_light')
 X_train, y_train, X_test, y_test = training_data_formater.get_train_test_split()
-print(X_train.shape)
 
-# # train the model
 # Instantiate the model 
-#model = LSTMClassifier()
-# model.train(learning_rate=0.001, epochs=150)
+
+import os
+from datetime import datetime
+log_dir = os.path.dirname(os.path.abspath(__file__))
+log_dir += "/model/"+datetime.now().strftime("%Y_%m_%d__%H_%M_%S")
+
+from TrafficLightFailoverNet.TrafficLightNeuralNet import TrafficLightNeuralNet
+model = TrafficLightNeuralNet(log_dir)
+model.train(X_train, y_train, X_test, y_test, n_epochs=150)
 
 
 
