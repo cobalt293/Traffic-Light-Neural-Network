@@ -8,11 +8,11 @@ class TrafficLightNeuralNet(object):
 
 
         # Model HyperParameters
-        self.learning_rate = 0.0003
+        self.learning_rate = 0.0001
         self.n_steps = 100
         self.n_inputs = 1
-        self.n_neurons = 200
-        self.n_layers = 4
+        self.n_neurons = 25
+        self.n_layers = 2
         self.n_outputs = 2
 
         with tf.name_scope('inputs'):
@@ -44,7 +44,7 @@ class TrafficLightNeuralNet(object):
         self.writer_test = tf.summary.FileWriter(self.log_dir + '/model/test/')
         self.saver = tf.train.Saver()
 
-    def train(self, X_train, y_train, X_test, y_test, n_epochs=100):
+    def train(self, X_train, y_train, X_test, y_test, n_epochs=10):
         """Trains the LSTM given the input training data"""
         with tf.Session() as sess:
             init = tf.global_variables_initializer()
@@ -60,49 +60,49 @@ class TrafficLightNeuralNet(object):
                 summary, acc = sess.run([self.merged_summaries, self.accuracy], feed_dict=feed_dict)
                 self.writer_test.add_summary(summary, epoch)
 
-                acc_train = self.accuracy.eval(feed_dict={self.X_tf: X_train, self.y_tf: y_train})
-                acc_test = self.accuracy.eval(feed_dict={self.X_tf: X_test, self.y_tf: y_test})
-                print(epoch, "Train accuracy:", acc_train, "Test accuracy:", acc_test)
-               
-                if acc_test > 0.93:
-                    print("Accuracy has reached above 93%")
-                    break
+                if epoch % 10 == 0:
+                    acc_train = self.accuracy.eval(feed_dict={self.X_tf: X_train, self.y_tf: y_train})
+                    acc_test = self.accuracy.eval(feed_dict={self.X_tf: X_test, self.y_tf: y_test})
+                    print(epoch, "Train accuracy:", acc_train, "Test accuracy:", acc_test)
+
             #Save the final model
             self.saver.save(sess, self.log_dir + '/model/saved_model')
 
     def predict(self, X_pred):
         """predicts the next state of each bach sample"""
-        # Predicting
         with tf.Session() as sess:
-            self.saver.restore(sess, self.project_path + '/model/saved_model')
-            data = raw_data['north_light'].values[:600]
-            target = np.copy(data[200:600])
-            test = np.copy(data[200:600])
-            test[200:] = -1
+            self.saver.restore(sess, self.log_dir + '/model/saved_model')
 
-            for i in range(201):
-                test_tf = test[i+100:i+200].reshape(1,-1,1)
-                next_value = sess.run([output_class], feed_dict={X_tf: test_tf})
-                test[i+199] = next_value[0][0]
+            y_pred = sess.run(self.output_class, feed_dict={self.X_tf: X_pred})
+            return y_pred
 
-            plt.clf()
-            plt.cla()
-            plt.close()
-            plt.figure(figsize=(15,10))
-            plt.subplot(311)
-            plt.title("Target Signal RNN is trying to match")
-            plt.plot(np.arange(len(target)), target, 'green')
+            # plt.clf()
+            # plt.cla()
+            # plt.close()
+            # plt.figure(figsize=(15,10))
+            # plt.subplot(311)
+            # plt.title("Target Signal RNN is trying to match")
+            # plt.plot(np.arange(len(target)), target, 'green')
             
-            plt.subplot(312)
-            plt.title("RNN predicts last 200 timesteps")
-            plt.axvline(x=200)
-            plt.plot(np.arange(len(test)), test, 'blue')
+            # plt.subplot(312)
+            # plt.title("RNN predicts last 200 timesteps")
+            # plt.axvline(x=200)
+            # plt.plot(np.arange(len(test)), test, 'blue')
             
-            plt.subplot(313)
-            plt.title("RNN Error (Target-Prediction)")
-            plt.plot(np.arange(len(test)), target-test, 'black')
-            plt.fill_between(np.arange(len(test)), 0, target-test, facecolor='red')
-            plt.savefig('LSTM_Classifier_Output')
-            plt.show()
+            # plt.subplot(313)
+            # plt.title("RNN Error (Target-Prediction)")
+            # plt.plot(np.arange(len(test)), target-test, 'black')
+            # plt.fill_between(np.arange(len(test)), 0, target-test, facecolor='red')
+            # plt.savefig('LSTM_Classifier_Output')
+            # plt.show()
 
-    #def delete_existing_model_files():
+
+            
+# rough number for total weight time at the intersection
+# average weight time per car
+
+# detecting when a failover is nessicary
+# detection of failure 
+# learn the behavior enough to detect somethign is wrong
+
+# neural net security lit search
