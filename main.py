@@ -23,31 +23,35 @@ for i in range(200):
 
 ###--------------------------------------------------------------------------------------
 ### Create LSTM Model, format training data, and Train the model
-# Instantiate the model 
-model = LSTMClassifier()
+
 
 # Instantiate the Data Generator class to create the training and testing data
-X_train, y_train, X_test, y_test = TrafficLightDataChef('log.csv')
+from TrafficLightFailoverNet.TrafficLightDataChef import TrafficLightDataChef
+training_data_formater = TrafficLightDataChef('log.csv', 'north_light')
+X_train, y_train, X_test, y_test = training_data_formater.get_train_test_split()
+print(X_train.shape)
 
-# train the model
-model.train(learning_rate=0.001, epochs=150)
+# # train the model
+# Instantiate the model 
+#model = LSTMClassifier()
+# model.train(learning_rate=0.001, epochs=150)
 
 
 
-###--------------------------------------------------------------------------------------
-### Predict the next state of the lights and run the simulator based on the LSTM's Output
-# Have the model predict the next value of the lights
-X_pred = # Shape(1,100,1)
-y_pred = model.predict(X_pred)
+# ###--------------------------------------------------------------------------------------
+# ### Predict the next state of the lights and run the simulator based on the LSTM's Output
+# # Have the model predict the next value of the lights
+# X_pred = # Shape(1,100,1)
+# y_pred = model.predict(X_pred)
 
-# Take the next light state and set the traffic light accordingly
-if y_pred is 1:
-    tl.set_lights(north='green', south='green', east='red', west='red')
-else:
-    tl.set_lights(north='red', south='red', east='green', west='green')
+# # Take the next light state and set the traffic light accordingly
+# if y_pred is 1:
+#     tl.set_lights(north='green', south='green', east='red', west='red')
+# else:
+#     tl.set_lights(north='red', south='red', east='green', west='green')
 
-tl.run_traffic_flow_op()
-tl.set_traffic_pattern(north=random.random(), 
-                    south=random.random(), 
-                    east=random.random(), 
-                    west=random.random())
+# tl.run_traffic_flow_op()
+# tl.set_traffic_pattern(north=random.random(), 
+#                     south=random.random(), 
+#                     east=random.random(), 
+#                     west=random.random())
