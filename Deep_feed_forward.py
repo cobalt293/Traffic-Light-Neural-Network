@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 
 tf.reset_default_graph()
 
+
+
 # Import and load the data into tensorflow
 raw_data = pd.read_csv('north_south.csv')
 X = raw_data[['north_queue_size', 'south_queue_size', 'east_queue_size', 'west_queue_size']]
