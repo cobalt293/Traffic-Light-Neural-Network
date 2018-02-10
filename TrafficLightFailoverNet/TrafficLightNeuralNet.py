@@ -8,11 +8,11 @@ class TrafficLightNeuralNet(object):
 
 
         # Model HyperParameters
-        self.learning_rate = 0.0001
+        self.learning_rate = 0.001
         self.n_steps = 100
         self.n_inputs = 1
-        self.n_neurons = 25
-        self.n_layers = 2
+        self.n_neurons = 300
+        self.n_layers = 4
         self.n_outputs = 2
 
         with tf.name_scope('inputs'):
@@ -24,6 +24,7 @@ class TrafficLightNeuralNet(object):
             self.multi_layer_cell = tf.contrib.rnn.MultiRNNCell(self.layers)
             self.rnn_outputs, self.states = tf.nn.dynamic_rnn(self.multi_layer_cell, self.X_tf, dtype=tf.float32)
 
+        
         with tf.name_scope('evaluation'):
             self.logits = tf.layers.dense(self.states[-1][0], self.n_outputs)
             self.output_class = tf.argmax(self.logits, axis=1)
@@ -97,7 +98,7 @@ class TrafficLightNeuralNet(object):
             # plt.show()
 
 
-            
+
 # rough number for total weight time at the intersection
 # average weight time per car
 

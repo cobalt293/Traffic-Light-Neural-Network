@@ -31,7 +31,7 @@ log_dir += "/model/"+datetime.now().strftime("%Y_%m_%d__%H_%M_%S")
 
 from TrafficLightFailoverNet.TrafficLightNeuralNet import TrafficLightNeuralNet
 model = TrafficLightNeuralNet(log_dir)
-model.train(X_train, y_train, X_test, y_test, n_epochs=50)
+model.train(X_train, y_train, X_test, y_test, n_epochs=500)
 
 
 
