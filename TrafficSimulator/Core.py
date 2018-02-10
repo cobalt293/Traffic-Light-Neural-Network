@@ -1,6 +1,17 @@
 import csv
 from queue import Queue
 import random
+import numpy as np
+
+class Car(object):
+    def __init__(self, enter_time):
+        self.enter_time = enter_time
+
+    def calculate_wait_time(self, cur_traffic_op):
+        """given the currrent traffic op count this function 
+        returns the total wait time it has spent in the intersection"""
+        return cur_traffic_op-self.enter_time
+
 
 class TrafficLight(object):
     """The main classs that will simulate the traffic light
@@ -12,16 +23,22 @@ class TrafficLight(object):
     def __init__(self, log_filename='log.csv'):
         
         # Cars waiting in each lane
-        self.north_q = 0
-        self.south_q = 0
-        self.east_q = 0
-        self.west_q = 0
+        self.north_q = []
+        self.south_q = []
+        self.east_q = []
+        self.west_q = []
+
+        # Performance Metrics of each lane
+        self.north_wait_times = [0]
+        self.south_wait_times = [0]
+        self.east_wait_times = [0]
+        self.west_wait_times = [0]
 
         # Chance a new car will enter the lane per traffic_op
-        self.chance_north_q = 0.5
-        self.chance_south_q = 0.5
-        self.chance_east_q = 0.5
-        self.chance_west_q = 0.5
+        self.chance_north_q = 0.4
+        self.chance_south_q = 0.4
+        self.chance_east_q = 0.4
+        self.chance_west_q = 0.4
 
         # Traffic Light Signals
         self.north_light = 'red'
@@ -47,45 +64,60 @@ class TrafficLight(object):
                 'east_light',
                 'west_light',
                 'north_queue_size',
+                'north_current_wait_time',
                 'south_queue_size',
+                'south_current_wait_time',
                 'east_queue_size',
-                'west_queue_size'
+                'east_current_wait_time',
+                'west_queue_size',
+                'west_current_wait_time',
             ])
+
+    def _calculate_average_wait_time(self, lane):
+        """lane is a pointer to one of the lanes in the instance.  calaulates
+        the average wait time of that lane"""
+        wait_times_of_each_car = []
+        for car in lane:
+            wait_times_of_each_car.append(car.calculate_wait_time(self.total_traffic_ops))
+        return np.nan_to_num(np.mean(wait_times_of_each_car))
 
     def run_traffic_flow_op(self, log=True, auto_light=True):
         """Runs the simulation 1 step.  This means that 1 car will pass
         through the intersection for the lights that are green"""
-        self.light_switch_threshold = 10
-
-        #  North
-        if self.north_light == 'green' and self.north_q > 0:
-            self.north_q -= 1
+        #  North --------------------------------------------------
+        self.north_wait_times.append(self._calculate_average_wait_time(self.north_q))
+        if self.north_light=='green' and len(self.north_q)>0:
+            north_exit_car = self.north_q.pop(0)
         if random.random() <= self.chance_north_q:
-            self.north_q += 1
+            self.north_q.append(Car(self.total_traffic_ops))
 
-        #  South
-        if self.south_light == 'green' and self.south_q > 0:
-            self.south_q -= 1
+        #  South --------------------------------------------------
+        self.south_wait_times.append(self._calculate_average_wait_time(self.south_q))
+        if self.south_light=='green' and len(self.south_q)>0:
+            south_exit_car = self.south_q.pop(0)
         if random.random() <= self.chance_south_q:
-            self.south_q += 1
+            self.south_q.append(Car(self.total_traffic_ops))
 
-        # East
-        if self.east_light == 'green' and self.east_q > 0:
-            self.east_q -= 1
+        # East --------------------------------------------------
+        self.east_wait_times.append(self._calculate_average_wait_time(self.east_q))
+        if self.east_light=='green' and len(self.east_q)>0:
+            east_exit_car = self.east_q.pop(0)
         if random.random() <= self.chance_east_q:
-            self.east_q += 1
+            self.east_q.append(Car(self.total_traffic_ops))
 
-        # West
-        if self.west_light == 'green' and self.west_q > 0:
-            self.west_q -= 1
+        # West --------------------------------------------------
+        self.west_wait_times.append(self._calculate_average_wait_time(self.west_q))
+        if self.west_light=='green' and len(self.west_q)>0:
+            west_exit_car = self.west_q.pop(0)
         if random.random() <= self.chance_west_q:
-            self.west_q += 1
-        self.total_traffic_ops += 1
+            self.west_q.append(Car(self.total_traffic_ops))
 
+        self.total_traffic_ops += 1
         # Change lights based on number of cars in each direction
+        self.light_switch_threshold = 10
         if auto_light:
-            ns_size = self.north_q + self.south_q
-            ew_size = self.east_q + self.west_q
+            ns_size = len(self.north_q) + len(self.south_q)
+            ew_size = len(self.east_q) + len(self.west_q)
 
             if (ns_size - ew_size) > self.light_switch_threshold:
                 self.set_lights(north='green', south='green', east='red', west='red')
@@ -112,10 +144,14 @@ class TrafficLight(object):
                 self.light_vector[1],
                 self.light_vector[2],
                 self.light_vector[3],
-                self.north_q,
-                self.south_q,
-                self.east_q,
-                self.west_q,
+                len(self.north_q),
+                self.north_wait_times[-1],
+                len(self.south_q),
+                self.south_wait_times[-1],
+                len(self.east_q),
+                self.east_wait_times[-1],
+                len(self.west_q),
+                self.west_wait_times[-1],
             ])
 
     def set_lights(self, north='red', south='red', east='red', west='red'):
