@@ -1,18 +1,20 @@
 import tensorflow as tf
 
+# If something is wrong with GPU and you want to force use the CPU
+# import os
+# os.environ['CUDA_VISIBLE_DEVICES'] = ''
 
 class TrafficLightNeuralNet(object):
     def __init__(self, log_dir):
         #LogDirectory
         self.log_dir = log_dir
 
-
         # Model HyperParameters
         self.learning_rate = 0.001
         self.n_steps = 100
-        self.n_inputs = 1
-        self.n_neurons = 300
-        self.n_layers = 4
+        self.n_inputs = 4
+        self.n_neurons = 15
+        self.n_layers = 3
         self.n_outputs = 2
 
         with tf.name_scope('inputs'):
@@ -23,7 +25,6 @@ class TrafficLightNeuralNet(object):
             self.layers = [tf.contrib.rnn.BasicLSTMCell(num_units=self.n_neurons) for layer in range(self.n_layers)]
             self.multi_layer_cell = tf.contrib.rnn.MultiRNNCell(self.layers)
             self.rnn_outputs, self.states = tf.nn.dynamic_rnn(self.multi_layer_cell, self.X_tf, dtype=tf.float32)
-
         
         with tf.name_scope('evaluation'):
             self.logits = tf.layers.dense(self.states[-1][0], self.n_outputs)
@@ -37,8 +38,6 @@ class TrafficLightNeuralNet(object):
             self.correct = tf.nn.in_top_k(self.logits, self.y_tf, 1)
             self.accuracy = tf.reduce_mean(tf.cast(self.correct, tf.float32))
             tf.summary.scalar('accuracy', self.accuracy)
-
-        
         
         self.merged_summaries = tf.summary.merge_all()
         self.writer_train = tf.summary.FileWriter(self.log_dir + '/model/train/')
@@ -96,14 +95,3 @@ class TrafficLightNeuralNet(object):
             # plt.fill_between(np.arange(len(test)), 0, target-test, facecolor='red')
             # plt.savefig('LSTM_Classifier_Output')
             # plt.show()
-
-
-
-# rough number for total weight time at the intersection
-# average weight time per car
-
-# detecting when a failover is nessicary
-# detection of failure 
-# learn the behavior enough to detect somethign is wrong
-
-# neural net security lit search
