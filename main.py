@@ -11,7 +11,7 @@ tl.set_traffic_pattern(north=0.50, south=0.50, east=0.15, west=0.15)
 tl.set_lights(north='green', south='green', east='red', west='red')
 
 # Create the first set of training data for the Model
-for i in range(4000):
+for i in range(20000):
     tl.run_traffic_flow_op()
 
 
@@ -49,7 +49,7 @@ model.train(X_train, y_train, X_test, y_test, n_epochs=400)
 # # # Have the model predict the next value of the lights
 import pandas as pd
 for i in range(600):
-    X_pred = pd.read_csv('log.csv')[COLUMNS][-100:].values.reshape(1,100,4)
+    X_pred = pd.read_csv('log.csv')[COLUMNS][-50:].values.reshape(1,50,4)
     y_pred = model.predict(X_pred)
 
     #print(y_pred)

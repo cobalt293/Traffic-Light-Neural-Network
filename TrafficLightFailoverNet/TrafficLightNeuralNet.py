@@ -11,7 +11,7 @@ class TrafficLightNeuralNet(object):
 
         # Model HyperParameters
         self.learning_rate = 0.001
-        self.n_steps = 100
+        self.n_steps = 50
         self.n_inputs = 4
         self.n_neurons = 15
         self.n_layers = 3

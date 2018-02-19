@@ -7,7 +7,7 @@ class TrafficLightDataChef(object):
         raw_data = pd.read_csv('log.csv')
 
         data_size = len(raw_data)
-        sample_length = 100
+        sample_length = 50
         num_inputs = 4
         data = raw_data[column_names].values
         print(data.shape)
