@@ -13,7 +13,7 @@ class TrafficLightNeuralNet(object):
         self.learning_rate = 0.001
         self.n_steps = 50
         self.n_inputs = 4
-        self.n_neurons = 15
+        self.n_neurons = 30
         self.n_layers = 3
         self.n_outputs = 2
 
@@ -22,8 +22,10 @@ class TrafficLightNeuralNet(object):
             self.y_tf = tf.placeholder(tf.int32, [None])
 
         with tf.name_scope('lstm'):
-            self.layers = [tf.contrib.rnn.BasicLSTMCell(num_units=self.n_neurons) for layer in range(self.n_layers)]
-            self.multi_layer_cell = tf.contrib.rnn.MultiRNNCell(self.layers)
+            self.keep_prob = tf.placeholder_with_default(1.0, shape=())
+            self.cells = [tf.contrib.rnn.BasicLSTMCell(num_units=self.n_neurons) for layer in range(self.n_layers)]
+            self.cells_drop = [tf.contrib.rnn.DropoutWrapper(cell, input_keep_prob=self.keep_prob) for cell in self.cells]
+            self.multi_layer_cell = tf.contrib.rnn.MultiRNNCell(self.cells_drop)
             self.rnn_outputs, self.states = tf.nn.dynamic_rnn(self.multi_layer_cell, self.X_tf, dtype=tf.float32)
         
         with tf.name_scope('evaluation'):
@@ -51,18 +53,18 @@ class TrafficLightNeuralNet(object):
             init.run()
             for epoch in range(n_epochs):
                 # Calculate Next Gradient Descent Step
-                feed_dict = {self.X_tf: X_train, self.y_tf: y_train}
+                feed_dict = {self.X_tf: X_train, self.y_tf: y_train, self.keep_prob: 0.5}
                 summary, _ = sess.run([self.merged_summaries, self.training_op], feed_dict=feed_dict)
                 self.writer_train.add_summary(summary, epoch)
 
                 # Log Accuracy of Test Data
-                feed_dict = {self.X_tf: X_test, self.y_tf: y_test}
+                feed_dict = {self.X_tf: X_test, self.y_tf: y_test, self.keep_prob: 0.5}
                 summary, acc = sess.run([self.merged_summaries, self.accuracy], feed_dict=feed_dict)
                 self.writer_test.add_summary(summary, epoch)
 
                 if epoch % 10 == 0:
-                    acc_train = self.accuracy.eval(feed_dict={self.X_tf: X_train, self.y_tf: y_train})
-                    acc_test = self.accuracy.eval(feed_dict={self.X_tf: X_test, self.y_tf: y_test})
+                    acc_train = self.accuracy.eval(feed_dict={self.X_tf: X_train, self.y_tf: y_train, self.keep_prob: 1.0})
+                    acc_test = self.accuracy.eval(feed_dict={self.X_tf: X_test, self.y_tf: y_test, self.keep_prob: 1.0})
                     print(epoch, "Train accuracy:", acc_train, "Test accuracy:", acc_test)
 
             #Save the final model
@@ -73,7 +75,7 @@ class TrafficLightNeuralNet(object):
         with tf.Session() as sess:
             self.saver.restore(sess, self.log_dir + '/model/saved_model')
 
-            y_pred = sess.run(self.output_class, feed_dict={self.X_tf: X_pred})
+            y_pred = sess.run(self.output_class, feed_dict={self.X_tf: X_pred, self.keep_prob: 1.0})
             return y_pred
 
             # plt.clf()
