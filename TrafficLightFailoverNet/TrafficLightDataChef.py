@@ -20,6 +20,7 @@ class TrafficLightDataChef(object):
 
         for i in range(batch_size-1):
             X[i] = data[i:i+sample_length].reshape(sample_length,-1)
+            X[i] = (X[i]-X[i].mean(axis=0)) / X[i].std(axis=0)
 
         randomized = np.arange(batch_size)
         np.random.shuffle(randomized)

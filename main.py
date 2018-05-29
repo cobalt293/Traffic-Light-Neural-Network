@@ -7,12 +7,21 @@ from TrafficSimulator.Core import TrafficLight
 import random
 tl = TrafficLight()
 
-tl.set_traffic_pattern(north=0.50, south=0.50, east=0.15, west=0.15)
+#Poisson distribution
+import numpy as np
+north_south = np.random.normal(loc=.25, scale=.08)
+east_west = .5-north_south
+
+tl.set_traffic_pattern(north=north_south, south=north_south, east=east_west, west=east_west)
 tl.set_lights(north='green', south='green', east='red', west='red')
 
 # Create the first set of training data for the Model
-for i in range(20000):
+for i in range(30000):
     tl.run_traffic_flow_op()
+    if i % 200:
+        north_south = np.random.normal(loc=.25, scale=.08)
+        east_west = .5-north_south
+        tl.set_traffic_pattern(north=north_south, south=north_south, east=east_west, west=east_west)
 
 
 
@@ -40,7 +49,7 @@ log_dir += "/model/"+datetime.now().strftime("%Y_%m_%d__%H_%M_%S")
 
 from TrafficLightFailoverNet.TrafficLightNeuralNet import TrafficLightNeuralNet
 model = TrafficLightNeuralNet(log_dir)
-model.train(X_train, y_train, X_test, y_test, n_epochs=400)
+model.train(X_train, y_train, X_test, y_test, n_epochs=10000)
 
 
 
@@ -50,9 +59,10 @@ model.train(X_train, y_train, X_test, y_test, n_epochs=400)
 import pandas as pd
 for i in range(600):
     X_pred = pd.read_csv('log.csv')[COLUMNS][-50:].values.reshape(1,50,4)
+    X_pred = (X_pred - X_pred.mean(axis=1)) / X_pred.std(axis=1) 
     y_pred = model.predict(X_pred)
 
-    #print(y_pred)
+
 
     if y_pred[0] == 0:
         #print("0", y_pred[0], type(y_pred[0]))
@@ -61,21 +71,48 @@ for i in range(600):
         tl.set_lights(north='green', south='green', east='red', west='red')
     tl.run_traffic_flow_op(auto_light=False)
 
+    if i % 200:
+        north_south = np.random.normal(loc=.25, scale=.08)
+        east_west = .5-north_south
+        tl.set_traffic_pattern(north=north_south, south=north_south, east=east_west, west=east_west)
+
 
 
 ## Plot the results
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+plt_columns = [
+    'north_current_wait_time',
+    'south_current_wait_time',
+    'east_current_wait_time',
+    'west_current_wait_time',
+]
 graph_raw_data = pd.read_csv('log.csv')[-1200:]
-graph_wait_times = graph_raw_data[COLUMNS]
+graph_wait_times = graph_raw_data[plt_columns]
+
 graph_north_light = graph_raw_data['north_light']
+graph_simulator = graph_north_light.copy(deep=True)
+graph_simulator[600:] = None
+graph_neural_net = graph_north_light.copy(deep=True)
+graph_neural_net[:600] = None
 
 fig = plt.figure()
 
+
 sub_plot_1 = fig.add_subplot(211)
-sub_plot_1 = graph_wait_times.plot.area()
+sub_plot_1.set_title("""Average Lane Wait Time""")
+sub_plot_1.plot(np.arange(len(graph_wait_times)),graph_wait_times)
+sub_plot_1.set_ylabel("Average Wait Time per Intersection")
+sub_plot_1.legend(plt_columns)
 
 sub_plot_2 = fig.add_subplot(212)
-sub_plot_2.plot(np.arange(len(graph_north_light)), graph_north_light)
+sub_plot_2.set_title("""State of North Light before and after Neural Net takes over""")
+sub_plot_2.plot(np.arange(len(graph_simulator)), graph_simulator, 'black') 
+sub_plot_2.plot(np.arange(len(graph_neural_net)), graph_neural_net, 'black')
 
+sub_plot_2.fill_between(np.arange(len(graph_simulator)), 0, graph_simulator, facecolor='blue', alpha=0.5)
+sub_plot_2.fill_between(np.arange(len(graph_neural_net)),0,graph_neural_net, facecolor='orange', alpha=0.5)
+sub_plot_2.set_ylabel("1 = Green Light    0 = Red Light")
+sub_plot_2.set_xlabel("Simulator Timesteps")
 plt.show()
