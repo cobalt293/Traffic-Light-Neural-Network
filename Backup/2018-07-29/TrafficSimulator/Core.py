@@ -129,15 +129,27 @@ class TrafficLight(object):
         if log:
             self._log_intersection_summary()
 
+    def return_light_state(self):
+        """Given the current queues what would the traffic light system
+        set the lights to"""
+        self.light_switch_threshold = 10
+        if auto_light:
+            ns_size = len(self.north_q) + len(self.south_q)
+            ew_size = len(self.east_q) + len(self.west_q)
+
+            if (ns_size - ew_size) > self.light_switch_threshold:
+                return { 'north'='green', 'south'='green', 'east'='red', 'west'='red'}
+
+            if (ew_size - ns_size) > self.light_switch_threshold:
+                return { 'north'='green', 'south'='green', 'east'='red', 'west'='red'}
+
     def _log_intersection_summary(self):
         """writes out to the csv file the current characteristics of
         the intersection.  This includes the lights, queue size of each
         lane, and the total number of traffic ops that have passed."""
         with open(self.log_filename, 'a', newline='') as csv_file:
-            csv_writer = csv.writer(csv_file, 
-                                    delimiter=',',
-                                    quotechar='|', 
-                                    quoting=csv.QUOTE_MINIMAL)
+            csv_writer = csv.writer(csv_file, delimiter=',',
+                                    quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
             csv_writer.writerow([
                 self.total_traffic_ops,
@@ -178,6 +190,7 @@ class TrafficLight(object):
         self.chance_south_q = south
         self.chance_east_q = east
         self.chance_west_q = west
+
 
     def show_intersection(self):
         intersection = """\
