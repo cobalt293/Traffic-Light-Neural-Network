@@ -4,7 +4,7 @@ import tensorflow as tf
 # import os
 # os.environ['CUDA_VISIBLE_DEVICES'] = ''
 
-class FailureNetwork(object):
+class FailureModel(object):
     def __init__(self, log_dir):
         #LogDirectory
         self.log_dir = log_dir
@@ -42,8 +42,8 @@ class FailureNetwork(object):
             tf.summary.scalar('accuracy', self.accuracy)
         
         self.merged_summaries = tf.summary.merge_all()
-        self.writer_train = tf.summary.FileWriter(self.log_dir + '/model/train/')
-        self.writer_test = tf.summary.FileWriter(self.log_dir + '/model/test/')
+        self.writer_train = tf.summary.FileWriter(self.log_dir + '/training_performance/train/')
+        self.writer_test = tf.summary.FileWriter(self.log_dir + '/training_performance/test/')
         self.saver = tf.train.Saver()
 
     def train(self, X_train, y_train, X_test, y_test, n_epochs=10):
@@ -68,12 +68,12 @@ class FailureNetwork(object):
                     print(epoch, "Train accuracy:", acc_train, "Test accuracy:", acc_test)
 
             #Save the final model
-            self.saver.save(sess, self.log_dir + '/model/saved_model')
+            self.saver.save(sess, self.log_dir + '/model')
 
     def predict(self, X_pred):
         """predicts the next state of each bach sample"""
         with tf.Session() as sess:
-            self.saver.restore(sess, self.log_dir + '/model/saved_model')
+            self.saver.restore(sess, self.log_dir + '/model')
 
             y_pred = sess.run(self.output_class, feed_dict={self.X_tf: X_pred, self.keep_prob: 1.0})
             return y_pred
