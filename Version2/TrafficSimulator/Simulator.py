@@ -1,5 +1,6 @@
 import csv
 import numpy as np
+import pandas as pd
 import uuid
 
 class Car(object):
@@ -14,6 +15,21 @@ class Car(object):
 
 class Simulator(object):
     def __init__(self):
+        self.COLUMNS = [
+            'timestep',
+            'cars_north_lane',
+            'cars_south_lane',
+            'cars_east_lane',
+            'cars_west_lane',
+            'light_state_north',
+            'light_state_south',
+            'light_state_east',
+            'light_state_west',
+            'north_avg_wait_time',
+            'south_avg_wait_time',
+            'east_avg_wait_time',
+            'west_avg_wait_time'
+        ]
         self.timestep = 0
 
         self.cars_north_lane = []
@@ -31,64 +47,81 @@ class Simulator(object):
         self.light_state_east = 0
         self.light_state_west = 0
 
-        self.state_store = []
+        self.state_store = pd.DataFrame(columns=self.COLUMNS)
+
+        self.failure_model = None
 
     def append_state_to_log(self):
-        cur_state = {
-            'timestep': self.timestep,
-            'cars_north_lane': len(self.cars_north_lane),
-            'cars_south_lane': len(self.cars_south_lane),
-            'cars_east_lane': len(self.cars_east_lane),
-            'cars_west_lane': len(self.cars_west_lane),
-            'light_state_north': self.light_state_north,
-            'light_state_south': self.light_state_south,
-            'light_state_east': self.light_state_east,
-            'light_state_west': self.light_state_west,
-            'north_avg_wait_time': self.north_avg_wait_time,
-            'south_avg_wait_time': self.south_avg_wait_time,
-            'east_avg_wait_time': self.east_avg_wait_time,
-            'west_avg_wait_time': self.west_avg_wait_time,
-        }
-        self.state_store.append(cur_state)
+        # cur_state = {
+        #     'timestep': self.timestep,
+        #     'cars_north_lane': len(self.cars_north_lane),
+        #     'cars_south_lane': len(self.cars_south_lane),
+        #     'cars_east_lane': len(self.cars_east_lane),
+        #     'cars_west_lane': len(self.cars_west_lane),
+        #     'light_state_north': self.light_state_north,
+        #     'light_state_south': self.light_state_south,
+        #     'light_state_east': self.light_state_east,
+        #     'light_state_west': self.light_state_west,
+        #     'north_avg_wait_time': self.north_avg_wait_time,
+        #     'south_avg_wait_time': self.south_avg_wait_time,
+        #     'east_avg_wait_time': self.east_avg_wait_time,
+        #     'west_avg_wait_time': self.west_avg_wait_time,
+        # }
+        self.state_store.loc[self.timestep] = [
+            self.timestep,
+            len(self.cars_north_lane),
+            len(self.cars_south_lane),
+            len(self.cars_east_lane),
+            len(self.cars_west_lane),
+            self.light_state_north,
+            self.light_state_south,
+            self.light_state_east,
+            self.light_state_west,
+            self.north_avg_wait_time,
+            self.south_avg_wait_time,
+            self.east_avg_wait_time,
+            self.west_avg_wait_time
+        ]
 
-    def flush_states_to_log(self, file_path):
-        with open(file_path, 'w', newline='') as log_file:
-            csv_writer = csv.writer(log_file,
-                                    delimiter=',',
-                                    quotechar='|',
-                                    quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow([
-                'timestep',
-                'light_state_north',
-                'light_state_south',
-                'light_state_east',
-                'light_state_west',
-                'cars_north_lane',
-                'cars_south_lane',
-                'cars_east_lane',
-                'cars_west_lane',
-                'north_avg_wait_time',
-                'south_avg_wait_time',
-                'east_avg_wait_time',
-                'west_avg_wait_time'
-            ])
+    def flush_states_to_log(self, log_file):
+        # with open(file_path, 'w', newline='') as log_file:
+        #     csv_writer = csv.writer(log_file,
+        #                             delimiter=',',
+        #                             quotechar='|',
+        #                             quoting=csv.QUOTE_MINIMAL)
+        #     csv_writer.writerow([
+        #         'timestep',
+        #         'light_state_north',
+        #         'light_state_south',
+        #         'light_state_east',
+        #         'light_state_west',
+        #         'cars_north_lane',
+        #         'cars_south_lane',
+        #         'cars_east_lane',
+        #         'cars_west_lane',
+        #         'north_avg_wait_time',
+        #         'south_avg_wait_time',
+        #         'east_avg_wait_time',
+        #         'west_avg_wait_time'
+        #     ])
 
-            for state in self.state_store:
-                csv_writer.writerow([
-                    state['timestep'],
-                    state['light_state_north'],
-                    state['light_state_south'],
-                    state['light_state_east'],
-                    state['light_state_west'],
-                    state['cars_north_lane'],
-                    state['cars_south_lane'],
-                    state['cars_east_lane'],
-                    state['cars_west_lane'],
-                    state['north_avg_wait_time'],
-                    state['south_avg_wait_time'],
-                    state['east_avg_wait_time'],
-                    state['west_avg_wait_time']
-                ])
+        #     for state in self.state_store:
+        #         csv_writer.writerow([
+        #             state['timestep'],
+        #             state['light_state_north'],
+        #             state['light_state_south'],
+        #             state['light_state_east'],
+        #             state['light_state_west'],
+        #             state['cars_north_lane'],
+        #             state['cars_south_lane'],
+        #             state['cars_east_lane'],
+        #             state['cars_west_lane'],
+        #             state['north_avg_wait_time'],
+        #             state['south_avg_wait_time'],
+        #             state['east_avg_wait_time'],
+        #             state['west_avg_wait_time']
+        #         ])
+        self.state_store.to_csv(log_file, index=False, columns=self.COLUMNS)
 
     def _calculate_average_wait_time(self, lane):
         """lane is a pointer to one of the lanes in the instance.  calaulates
@@ -156,7 +189,39 @@ class Simulator(object):
         self.timestep += 1
 
     def run_timestep_failover(self, new_traffic):
-        pass
+        """use the failure model to determin what the 
+        state of the traffic lights should be"""
+        self._next_timestep(new_traffic)
+        
+        decision_data = self.state_store[['cars_north_lane', 'cars_south_lane', 'cars_east_lane', 'cars_west_lane']][-50:].values.reshape(-1,50,4)
+
+        decision_data = (decision_data - decision_data.mean(axis=1)) / decision_data.std(axis=1)
+        # print(decision_data)
+        # print(decision_data.shape)
+
+        ## failover models makes a decision as to what the light should be 
+        decision = self.failure_model.predict(decision_data)
+        print("decision: ", decision)
+
+        if decision== 1:
+            print("setting north light green")
+            self.light_state_north = 1
+            self.light_state_south = 1
+            self.light_state_east = 0
+            self.light_state_west = 0
+        else:
+            print("setting north light red")
+            self.light_state_north = 0
+            self.light_state_south = 0
+            self.light_state_east = 1
+            self.light_state_west = 1
+
+
+        self.append_state_to_log()
+
+    def add_failure_model(self, failure_model):
+        """Adds a failure model to the simulation"""
+        self.failure_model = failure_model
 
     def __str__(self):
         s = """Timestep: {timestep}

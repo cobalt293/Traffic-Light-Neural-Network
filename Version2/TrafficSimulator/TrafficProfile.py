@@ -2,7 +2,7 @@ import numpy as np
 import random
 
 class TrafficProfile(object):
-    
+
     def __init__(self, num_timesteps):
         self.north_arrivals = None
         self.south_arrivals = None

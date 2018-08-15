@@ -1,0 +1,2 @@
+model_checkpoint_path: "/home/andy/Desktop/Traffic-Light-Neural-Network/Version2/FailureModel/saved_model/model/model"
+all_model_checkpoint_paths: "/home/andy/Desktop/Traffic-Light-Neural-Network/Version2/FailureModel/saved_model/model/model"

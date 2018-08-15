@@ -13,7 +13,7 @@ class FailureModel(object):
         self.learning_rate = 0.001
         self.n_steps = 50
         self.n_inputs = 4
-        self.n_neurons = 30
+        self.n_neurons = 100
         self.n_layers = 3
         self.n_outputs = 2
 
@@ -72,28 +72,9 @@ class FailureModel(object):
 
     def predict(self, X_pred):
         """predicts the next state of each bach sample"""
+        
         with tf.Session() as sess:
             self.saver.restore(sess, self.log_dir + '/model')
 
             y_pred = sess.run(self.output_class, feed_dict={self.X_tf: X_pred, self.keep_prob: 1.0})
-            return y_pred
-
-            # plt.clf()
-            # plt.cla()
-            # plt.close()
-            # plt.figure(figsize=(15,10))
-            # plt.subplot(311)
-            # plt.title("Target Signal RNN is trying to match")
-            # plt.plot(np.arange(len(target)), target, 'green')
-            
-            # plt.subplot(312)
-            # plt.title("RNN predicts last 200 timesteps")
-            # plt.axvline(x=200)
-            # plt.plot(np.arange(len(test)), test, 'blue')
-            
-            # plt.subplot(313)
-            # plt.title("RNN Error (Target-Prediction)")
-            # plt.plot(np.arange(len(test)), target-test, 'black')
-            # plt.fill_between(np.arange(len(test)), 0, target-test, facecolor='red')
-            # plt.savefig('LSTM_Classifier_Output')
-            # plt.show()
+            return y_pred[0]
