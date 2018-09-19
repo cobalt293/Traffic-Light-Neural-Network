@@ -52,21 +52,6 @@ class Simulator(object):
         self.failure_model = None
 
     def append_state_to_log(self):
-        # cur_state = {
-        #     'timestep': self.timestep,
-        #     'cars_north_lane': len(self.cars_north_lane),
-        #     'cars_south_lane': len(self.cars_south_lane),
-        #     'cars_east_lane': len(self.cars_east_lane),
-        #     'cars_west_lane': len(self.cars_west_lane),
-        #     'light_state_north': self.light_state_north,
-        #     'light_state_south': self.light_state_south,
-        #     'light_state_east': self.light_state_east,
-        #     'light_state_west': self.light_state_west,
-        #     'north_avg_wait_time': self.north_avg_wait_time,
-        #     'south_avg_wait_time': self.south_avg_wait_time,
-        #     'east_avg_wait_time': self.east_avg_wait_time,
-        #     'west_avg_wait_time': self.west_avg_wait_time,
-        # }
         self.state_store.loc[self.timestep] = [
             self.timestep,
             len(self.cars_north_lane),
@@ -153,6 +138,65 @@ class Simulator(object):
             self.light_state_south = 0
             self.light_state_east = 1
             self.light_state_west = 1
+        self.append_state_to_log()
+
+    def run_timestep_static(self, new_traffic):
+        """Will Switch Lights at a static inverval"""
+        self._next_timestep(new_traffic)
+        if self.timestep % 30 == 0:
+            # NORTH
+            if self.light_state_north == 1:
+                self.light_state_north = 0
+            else:
+                self.light_state_north = 1
+
+            # SOUTH
+            if self.light_state_south == 1:
+                self.light_state_south = 0
+            else:
+                self.light_state_south = 1
+
+            # EAST
+            if self.light_state_east == 1:
+                self.light_state_east = 0
+            else:
+                self.light_state_east = 1
+
+            # WEST
+            if self.light_state_west == 1:
+                self.light_state_west = 0
+            else:
+                self.light_state_west = 1
+        self.append_state_to_log()
+
+    def run_timestep_failover(self, new_traffic):
+        """use the failure model to determin what the 
+        state of the traffic lights should be"""
+        self._next_timestep(new_traffic)
+        
+        decision_data = self.state_store[['cars_north_lane', 'cars_south_lane', 'cars_east_lane', 'cars_west_lane']][-50:].values.reshape(-1,50,4)
+
+        decision_data = (decision_data - decision_data.mean(axis=1)) / decision_data.std(axis=1)
+        # print(decision_data)
+        # print(decision_data.shape)
+
+        ## failover models makes a decision as to what the light should be 
+        decision = self.failure_model.predict(decision_data)
+        print("decision: ", decision)
+
+        if decision== 1:
+            print("setting north light green")
+            self.light_state_north = 1
+            self.light_state_south = 1
+            self.light_state_east = 0
+            self.light_state_west = 0
+        else:
+            print("setting north light red")
+            self.light_state_north = 0
+            self.light_state_south = 0
+            self.light_state_east = 1
+            self.light_state_west = 1
+
 
         self.append_state_to_log()
 
@@ -187,37 +231,6 @@ class Simulator(object):
         self.west_avg_wait_time = self._calculate_average_wait_time(self.cars_west_lane)
         
         self.timestep += 1
-
-    def run_timestep_failover(self, new_traffic):
-        """use the failure model to determin what the 
-        state of the traffic lights should be"""
-        self._next_timestep(new_traffic)
-        
-        decision_data = self.state_store[['cars_north_lane', 'cars_south_lane', 'cars_east_lane', 'cars_west_lane']][-50:].values.reshape(-1,50,4)
-
-        decision_data = (decision_data - decision_data.mean(axis=1)) / decision_data.std(axis=1)
-        # print(decision_data)
-        # print(decision_data.shape)
-
-        ## failover models makes a decision as to what the light should be 
-        decision = self.failure_model.predict(decision_data)
-        print("decision: ", decision)
-
-        if decision== 1:
-            print("setting north light green")
-            self.light_state_north = 1
-            self.light_state_south = 1
-            self.light_state_east = 0
-            self.light_state_west = 0
-        else:
-            print("setting north light red")
-            self.light_state_north = 0
-            self.light_state_south = 0
-            self.light_state_east = 1
-            self.light_state_west = 1
-
-
-        self.append_state_to_log()
 
     def add_failure_model(self, failure_model):
         """Adds a failure model to the simulation"""

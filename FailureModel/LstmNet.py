@@ -1,10 +1,11 @@
 import tensorflow as tf
+from FailureModel.Utility import generate_random_batches
 
 # If something is wrong with GPU and you want to force use the CPU
 # import os
 # os.environ['CUDA_VISIBLE_DEVICES'] = ''
 
-class FailureModel(object):
+class LstmNet(object):
     def __init__(self, log_dir):
         #LogDirectory
         self.log_dir = log_dir
@@ -13,10 +14,10 @@ class FailureModel(object):
         self.learning_rate = 0.001
         self.n_steps = 50
         self.n_inputs = 4
-        self.n_neurons = 100
+        self.n_neurons = 50
         self.n_layers = 3
         self.n_outputs = 2
-        self.batch_size = 100
+        self.batch_size = 300
 
         with tf.name_scope('inputs'):
             self.X_tf = tf.placeholder(tf.float32, [None, self.n_steps, self.n_inputs])
@@ -47,17 +48,23 @@ class FailureModel(object):
         self.writer_test = tf.summary.FileWriter(self.log_dir + '/training_performance/test/')
         self.saver = tf.train.Saver()
 
-    def train(self, X_train, y_train, X_test, y_test, n_epochs=10):
+    def train(self, X_train, y_train, X_test, y_test, n_epochs=1):
         """Trains the LSTM given the input training data"""
         with tf.Session() as sess:
             init = tf.global_variables_initializer()
             init.run()
             for epoch in range(n_epochs):
                 # Create Batches with size of BATCH_SIZE
-                X_train_batches, y_train_batches = generate_random_batches(X_train, y_train)
+                X_train_batches, y_train_batches = generate_random_batches(X_train, y_train, self.batch_size)
+                print("-------------------X_train shape: ", X_train.shape)
+                print("-------------------y_train shape: ", y_train.shape)
 
                 # Iterage through the batches and performn training each time
                 for X_batch, y_batch in zip(X_train_batches, y_train_batches):
+                    # print("X_batch shape: ", X_batch.shape)
+                    # print("y_batch shape: ", y_batch.shape)
+                    # print(X_batch)
+                    # print(y_batch)
                     # Calculate Next Gradient Descent Step
                     feed_dict = {self.X_tf: X_batch, self.y_tf: y_batch, self.keep_prob: 0.5}
                     summary, _ = sess.run([self.merged_summaries, self.training_op], feed_dict=feed_dict)
@@ -68,7 +75,7 @@ class FailureModel(object):
                     summary, acc = sess.run([self.merged_summaries, self.accuracy], feed_dict=feed_dict)
                     self.writer_test.add_summary(summary, epoch)
 
-                if epoch % 10 == 0:
+                # if epoch % 1 == 0:
                     acc_train = self.accuracy.eval(feed_dict={self.X_tf: X_train, self.y_tf: y_train, self.keep_prob: 1.0})
                     acc_test = self.accuracy.eval(feed_dict={self.X_tf: X_test, self.y_tf: y_test, self.keep_prob: 1.0})
                     print(epoch, "Train accuracy:", acc_train, "Test accuracy:", acc_test)

@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 
+# climb to __file__'s parent's parent:
+#os.path.abspath(__file__ + "/../../")
+
 def get_train_test_split(log_file, keep_columns):
     """Reads the log file and keep the columns in keep_columns
     Shuffels the data and splits it into a training set and testing set
@@ -20,12 +23,19 @@ def get_train_test_split(log_file, keep_columns):
     for i in range(batch_size-1):
         X[i] = data[i:i+sample_length].reshape(sample_length,-1)
         X[i] = (X[i]-X[i].mean(axis=0)) / X[i].std(axis=0)
+    
+    # Remove Nan
+    X = np.nan_to_num(X)
+    print(X.shape)
+    print(np.amin(X))
+    print(np.amin(X))
+
 
     # Shuffle X and y
-    randomized = np.arange(batch_size)
-    np.random.shuffle(randomized)
-    X = X[randomized]
-    y = y[randomized].astype(int)
+    shuffle = np.arange(batch_size)
+    np.random.shuffle(shuffle)
+    X = X[shuffle]
+    y = y[shuffle].astype(int)
 
     # split into train and test
     train_stop = np.floor(len(X) * 0.8).astype(int) # the index where training data stops and testing data starts
@@ -41,9 +51,11 @@ def generate_random_batches(X, y, batch_size):
     """shuffles the training set into batches of size batch_size
     will output:
     [[x_batch], [x_batch], .....], [[y_batch],[y_batch],....]"""
-    
+
     # Shuffle X and y in the same way.
-    shuffle = np.random.shuffle(np.arange(len(X)))
+    shuffle = np.arange(len(X))
+    np.random.shuffle(shuffle)
+
     X = X[shuffle]
     y = y[shuffle].astype(int)
 
@@ -54,5 +66,5 @@ def generate_random_batches(X, y, batch_size):
         X_batches.append(X[cursor-batch_size: cursor])
         y_batches.append(y[cursor-batch_size: cursor])
         cursor += batch_size
-    
+
     return X_batches, y_batches

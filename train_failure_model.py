@@ -1,5 +1,5 @@
-from FailureModel.LstmNet import FailureModel
-from FailureModel.DataChef import DataChef
+from FailureModel import LstmNet
+from FailureModel import Utility
 from TrafficSimulator.TrafficProfile import TrafficProfile
 from TrafficSimulator.Simulator import Simulator
 
@@ -16,7 +16,7 @@ COLUMNS = [
     'cars_west_lane',
 ]
 
-traffic_p = TrafficProfile(500)
+traffic_p = TrafficProfile(20000)
 
 sim_normal = Simulator()
 
@@ -26,8 +26,7 @@ for new_cars in traffic_p.iter_timesteps():
 
 sim_normal.flush_states_to_log(TRAINING_LOG)
 
-training_data_formater = DataChef(TRAINING_LOG, COLUMNS)
-X_train, y_train, X_test, y_test = training_data_formater.get_train_test_split()
+X_train, y_train, X_test, y_test = Utility.get_train_test_split(TRAINING_LOG, COLUMNS)
 
-failure_model = FailureModel(FAILURE_MODEL)
-failure_model.train(X_train, y_train, X_test, y_test, n_epochs=75)
+failure_model = LstmNet(FAILURE_MODEL)
+failure_model.train(X_train, y_train, X_test, y_test, n_epochs=3)
