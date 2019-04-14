@@ -1,5 +1,6 @@
 import numpy as np
 import random
+import csv
 
 class TrafficProfile(object):
 
@@ -71,4 +72,12 @@ class TrafficProfile(object):
                 'east': self.east_arrivals[i],
                 'west': self.west_arrivals[i]
             }
-    
+
+    def to_csv(self, file):
+        with open(file, 'w') as f:
+            csv_writer = csv.writer(f, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            csv_writer.writerow(['north_entry', 'south_entry', 'east_entry', 'west_entry'])
+            for n,s,e,w in zip(self.north_arrivals, self.south_arrivals, self.east_arrivals, self.west_arrivals):
+                csv_writer.writerow([n,s,e,w])
+            
+
