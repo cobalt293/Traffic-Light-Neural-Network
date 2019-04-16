@@ -1,5 +1,5 @@
 import tensorflow as tf
-from FailureModel.Utility import generate_random_batches
+from FailureModels.Utility import generate_random_batches
 
 # If something is wrong with GPU and you want to force use the CPU
 # import os
@@ -56,8 +56,8 @@ class LstmNet(object):
             for epoch in range(n_epochs):
                 # Create Batches with size of BATCH_SIZE
                 X_train_batches, y_train_batches = generate_random_batches(X_train, y_train, self.batch_size)
-                print("-------------------X_train shape: ", X_train.shape)
-                print("-------------------y_train shape: ", y_train.shape)
+                # print("-------------------X_train shape: ", X_train.shape)
+                # print("-------------------y_train shape: ", y_train.shape)
 
                 # Iterage through the batches and performn training each time
                 for X_batch, y_batch in zip(X_train_batches, y_train_batches):

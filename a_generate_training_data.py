@@ -7,7 +7,8 @@ TRAINING_DATA_PRIMARY_FILE = os.path.abspath('./data/training_data_primary.csv')
 TRAINING_DATA_STATIC_FILE = os.path.abspath('./data/training_data_static.csv')
 
 ## Create a traffic profile
-traffic_p = TrafficProfile(300)
+traffic_p = TrafficProfile()
+traffic_p.generate(300)
 traffic_p.to_csv(TRAFIC_PROFILE_FILE)
 
 

@@ -4,7 +4,7 @@ import csv
 
 class TrafficProfile(object):
 
-    def __init__(self, num_timesteps):
+    def __init__(self, data_file=None):
         self.north_arrivals = None
         self.south_arrivals = None
         self.east_arrivals = None
@@ -12,7 +12,25 @@ class TrafficProfile(object):
         
         self.total_cars = None
 
-        self.generate(num_timesteps)
+        if data_file:
+            self.load_data_file(data_file)
+
+    def load_data_file(self, file):
+        self.north_arrivals = []
+        self.south_arrivals = []
+        self.east_arrivals = []
+        self.west_arrivals = []
+        try:
+            with open(file, 'r') as f:
+                csv_reader = csv.DictReader(f, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
+                for row in csv_reader:
+                    self.north_arrivals.append(row['north_arrivals'])
+                    self.south_arrivals.append(row['south_arrivals'])
+                    self.east_arrivals.append(row['east_arrivals'])
+                    self.west_arrivals.append(row['west_arrivals'])
+        except Exception as e:
+            print("Something went wrong")
+            print(e)
 
     def generate(self, num_timesteps):
         """Generates the arrival times for each of the lanes.
@@ -76,7 +94,7 @@ class TrafficProfile(object):
     def to_csv(self, file):
         with open(file, 'w') as f:
             csv_writer = csv.writer(f, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            csv_writer.writerow(['north_entry', 'south_entry', 'east_entry', 'west_entry'])
+            csv_writer.writerow(['north_arrivals', 'south_arrivals', 'east_arrivals', 'west_arrivals'])
             for n,s,e,w in zip(self.north_arrivals, self.south_arrivals, self.east_arrivals, self.west_arrivals):
                 csv_writer.writerow([n,s,e,w])
             
