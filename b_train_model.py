@@ -1,6 +1,5 @@
 from FailureModels.LstmNet import LstmNet
 from FailureModels.Utility import get_train_test_split
-
 import os
 
 FAILURE_MODEL = os.path.abspath('FailureModels/saved_model/model')
