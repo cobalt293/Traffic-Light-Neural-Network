@@ -1,26 +1,31 @@
 import matplotlib.pyplot as plt
 import os
+from sklearn import svm
+import pickle
 
 from TrafficSimulator.Simulator import Simulator
 from TrafficSimulator.TrafficProfile import TrafficProfile
-from FailureModels.LstmNet import LstmNet
 
-FAILURE_MODEL = os.path.abspath('FailureModels/saved_model/model')
+FAILURE_MODEL_PICKLE = os.path.abspath('FailureModels/saved_model/model_svm.pickle')
 TRAFIC_PROFILE_FILE = os.path.abspath('./data/traffic_profile.csv')
-RECOVERY_RESULT_FILE = os.path.abspath('./data/recovery_data_lstm.csv')
+RECOVERY_RESULT_FILE = os.path.abspath('./data/recovery_data_svm.csv')
 
 traffic_p = TrafficProfile()
 traffic_p.load_data_file(TRAFIC_PROFILE_FILE)
 
 sim_failover = Simulator()
-sim_failover.add_failure_model(LstmNet(FAILURE_MODEL))
+with open(FAILURE_MODEL_PICKLE, 'rb') as f:
+    failure_model = pickle.load(f)
+sim_failover.add_failure_model(failure_model)
 # # Run the Failover this is assuming it's already trained
 # # let the normal algo take care of the first 100 timesteps
 c = 0
 for new_cars in traffic_p.iter_timesteps():
     if c<50:
+        
         sim_failover.run_timestep_primary(new_cars)
     else:
+        print(new_cars)
         sim_failover.run_timestep_failover(new_cars)
     c += 1
 sim_failover.flush_states_to_log(RECOVERY_RESULT_FILE)

@@ -173,12 +173,12 @@ class Simulator(object):
         """use the failure model to determin what the 
         state of the traffic lights should be"""
         self._next_timestep(new_traffic)
-        
+
         decision_data = self.state_store[['cars_north_lane', 'cars_south_lane', 'cars_east_lane', 'cars_west_lane']][-50:].values.reshape(-1,50,4)
 
         decision_data = (decision_data - decision_data.mean(axis=1)) / decision_data.std(axis=1)
-        # print(decision_data)
-        # print(decision_data.shape)
+        print(decision_data)
+        print(decision_data.shape)
 
         ## failover models makes a decision as to what the light should be 
         decision = self.failure_model.predict(decision_data)
@@ -197,7 +197,6 @@ class Simulator(object):
             self.light_state_east = 1
             self.light_state_west = 1
 
-
         self.append_state_to_log()
 
     def _next_timestep(self, new_traffic):
@@ -214,10 +213,10 @@ class Simulator(object):
         # have traffic flow on the lights that are green
         if self.light_state_north == 1 and len(self.cars_north_lane)>0:
             self.cars_north_lane.pop(0)
-        
+
         if self.light_state_south == 1 and len(self.cars_south_lane)>0:
             self.cars_south_lane.pop(0)
-        
+
         if self.light_state_east == 1 and len(self.cars_east_lane)>0:
             self.cars_east_lane.pop(0)
         
