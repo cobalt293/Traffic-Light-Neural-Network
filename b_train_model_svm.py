@@ -42,7 +42,7 @@ y_test = y[train_stop:]
 model = svm.SVC(gamma='scale')
 model.fit(X_train, y_train)
 
-with open('./FailureModels/saved_model/model_svm.pickle', 'wb') as f:
+with open(FAILURE_MODEL, 'wb') as f:
     pickle.dump(model, f)
 
 

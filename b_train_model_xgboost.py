@@ -1,10 +1,10 @@
 import os
 import pandas as pd
 import numpy as np
-from xgboost import xgb
+import  xgboost as xgb
 import pickle
 
-FAILURE_MODEL = os.path.abspath('FailureModels/saved_model/svm.pickle')
+FAILURE_MODEL = os.path.abspath('FailureModels/saved_model/xgboost.pickle')
 TRAINING_LOG = os.path.abspath('data/training_data_primary.csv')
 
 KEEP_COLUMNS = [
@@ -48,7 +48,7 @@ model = xgb.XGBClassifier(objective="binary:logistic", random_state=42)
 
 model.fit(X_train, y_train)
 
-with open('./FailureModels/saved_model/model_xgboost.pickle', 'wb') as f:
+with open(FAILURE_MODEL, 'wb') as f:
     pickle.dump(model, f)
 
 

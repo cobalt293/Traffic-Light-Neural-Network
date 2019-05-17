@@ -6,9 +6,9 @@ import pickle
 from TrafficSimulator.Simulator import Simulator
 from TrafficSimulator.TrafficProfile import TrafficProfile
 
-FAILURE_MODEL_PICKLE = os.path.abspath('FailureModels/saved_model/model_svm.pickle')
+FAILURE_MODEL_PICKLE = os.path.abspath('FailureModels/saved_model/xgboost.pickle')
 TRAFIC_PROFILE_FILE = os.path.abspath('./data/traffic_profile.csv')
-RECOVERY_RESULT_FILE = os.path.abspath('./data/recovery_data_svm.csv')
+RECOVERY_RESULT_FILE = os.path.abspath('./data/recovery_data_xgboost.csv')
 
 traffic_p = TrafficProfile()
 traffic_p.load_data_file(TRAFIC_PROFILE_FILE)
