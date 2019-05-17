@@ -15,5 +15,5 @@ COLUMNS = [
 X_train, y_train, X_test, y_test = get_train_test_split(TRAINING_LOG, COLUMNS)
 
 failure_model = LstmNet(FAILURE_MODEL)
-failure_model.train(X_train, y_train, X_test, y_test, n_epochs=100)
+failure_model.fit(X_train, y_train, X_test, y_test, n_epochs=2)
 

@@ -24,10 +24,10 @@ class TrafficProfile(object):
             with open(file, 'r') as f:
                 csv_reader = csv.DictReader(f, delimiter=',',quotechar='|', quoting=csv.QUOTE_MINIMAL)
                 for row in csv_reader:
-                    self.north_arrivals.append(row['north_arrivals'])
-                    self.south_arrivals.append(row['south_arrivals'])
-                    self.east_arrivals.append(row['east_arrivals'])
-                    self.west_arrivals.append(row['west_arrivals'])
+                    self.north_arrivals.append(int(row['north_arrivals']))
+                    self.south_arrivals.append(int(row['south_arrivals']))
+                    self.east_arrivals.append(int(row['east_arrivals']))
+                    self.west_arrivals.append(int(row['west_arrivals']))
         except Exception as e:
             print("Something went wrong")
             print(e)

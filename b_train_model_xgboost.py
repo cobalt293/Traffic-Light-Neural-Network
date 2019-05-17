@@ -1,7 +1,8 @@
 import os
 import pandas as pd
 import numpy as np
-from sklearn import svm
+from xgboost import xgb
+import pickle
 
 FAILURE_MODEL = os.path.abspath('FailureModels/saved_model/svm.pickle')
 TRAINING_LOG = os.path.abspath('data/training_data_primary.csv')
@@ -30,6 +31,10 @@ np.random.shuffle(shuffle)
 X = X[shuffle]
 y = y[shuffle].astype(int)
 
+
+
+
+
 # split into train and test
 train_stop = np.floor(len(X) * 0.8).astype(int) # the index where training data stops and testing data starts
 
@@ -39,19 +44,11 @@ X_test = X[train_stop:]
 y_test = y[train_stop:]
 
 
+model = xgb.XGBClassifier(objective="binary:logistic", random_state=42)
 
-X_train, y_train, X_test, y_test = get_train_test_split(TRAINING_LOG, COLUMNS)
+model.fit(X_train, y_train)
 
-
-data = pd.read_csv(TRAINING_LOG)
-
-X = []
-y = []
-for i in range(200):
-    X.append(data['cars_north_lane'][i:50+i])
-    y.append(int(data['light_state_north'][50+i]))
-
-model = svm.SVC(gamma='scale')
-model.fit(X,y)
+with open('./FailureModels/saved_model/model_xgboost.pickle', 'wb') as f:
+    pickle.dump(model, f)
 
 

@@ -48,7 +48,7 @@ class LstmNet(object):
         self.writer_test = tf.summary.FileWriter(self.log_dir + '/training_performance/test/')
         self.saver = tf.train.Saver()
 
-    def train(self, X_train, y_train, X_test, y_test, n_epochs=1):
+    def fit(self, X_train, y_train, X_test, y_test, n_epochs=1):
         """Trains the LSTM given the input training data"""
         with tf.Session() as sess:
             init = tf.global_variables_initializer()
@@ -78,7 +78,7 @@ class LstmNet(object):
                 # if epoch % 1 == 0:
                     acc_train = self.accuracy.eval(feed_dict={self.X_tf: X_train, self.y_tf: y_train, self.keep_prob: 1.0})
                     acc_test = self.accuracy.eval(feed_dict={self.X_tf: X_test, self.y_tf: y_test, self.keep_prob: 1.0})
-                    print(epoch, "Train accuracy:", acc_train, "Test accuracy:", acc_test)
+                    print("Epoch: ", epoch, "Train accuracy:", acc_train, "Test accuracy:", acc_test)
 
             #Save the final model
             self.saver.save(sess, self.log_dir + '/model')

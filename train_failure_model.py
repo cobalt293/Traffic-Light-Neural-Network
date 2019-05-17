@@ -29,4 +29,4 @@ sim_normal.flush_states_to_log(TRAINING_LOG)
 X_train, y_train, X_test, y_test = Utility.get_train_test_split(TRAINING_LOG, COLUMNS)
 
 failure_model = LstmNet(FAILURE_MODEL)
-failure_model.train(X_train, y_train, X_test, y_test, n_epochs=3)
+failure_model.fit(X_train, y_train, X_test, y_test, n_epochs=3)

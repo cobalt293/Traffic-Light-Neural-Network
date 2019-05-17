@@ -169,7 +169,7 @@ class Simulator(object):
                 self.light_state_west = 1
         self.append_state_to_log()
 
-    def run_timestep_failover(self, new_traffic):
+    def run_timestep_failover_3d(self, new_traffic):
         """use the failure model to determin what the 
         state of the traffic lights should be"""
         self._next_timestep(new_traffic)
@@ -177,8 +177,51 @@ class Simulator(object):
         decision_data = self.state_store[['cars_north_lane', 'cars_south_lane', 'cars_east_lane', 'cars_west_lane']][-50:].values.reshape(-1,50,4)
 
         decision_data = (decision_data - decision_data.mean(axis=1)) / decision_data.std(axis=1)
-        print(decision_data)
-        print(decision_data.shape)
+        #print(decision_data)
+        #print(decision_data.shape)
+
+        ## failover models makes a decision as to what the light should be 
+        decision = self.failure_model.predict(decision_data)
+        print("decision: ", decision)
+
+        if decision== 1:
+            print("setting north light green")
+            self.light_state_north = 1
+            self.light_state_south = 1
+            self.light_state_east = 0
+            self.light_state_west = 0
+        else:
+            print("setting north light red")
+            self.light_state_north = 0
+            self.light_state_south = 0
+            self.light_state_east = 1
+            self.light_state_west = 1
+
+        self.append_state_to_log()
+
+    def run_timestep_failover_2d(self, new_traffic):
+        """use the failure model to determin what the 
+        state of the traffic lights should be"""
+        self._next_timestep(new_traffic)
+
+        decision_data = self.state_store[['cars_north_lane', 'cars_south_lane', 'cars_east_lane', 'cars_west_lane']][-1:].values.reshape(1,4)
+        print('decision_data', decision_data)
+        
+        std = decision_data.std(axis=1)
+        #print('std', std)
+        
+        mean = decision_data.mean(axis=1)
+        #print("mean", mean)
+
+        if std >= 0.0000001:
+            decision_data_norm = (decision_data - mean) / std
+        else:
+            decision_data_norm = (decision_data - mean) / 0.00000001
+        
+        
+        
+        print('decision_data_norm', decision_data_norm)
+        print('decision data.shape', decision_data.shape)
 
         ## failover models makes a decision as to what the light should be 
         decision = self.failure_model.predict(decision_data)
