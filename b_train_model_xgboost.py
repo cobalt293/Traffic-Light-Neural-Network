@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import  xgboost as xgb
 import pickle
+import matplotlib.pyplot as plt
 
 FAILURE_MODEL = os.path.abspath('FailureModels/saved_model/xgboost.pickle')
 TRAINING_LOG = os.path.abspath('data/training_data_primary.csv')
@@ -46,9 +47,36 @@ y_test = y[train_stop:]
 
 model = xgb.XGBClassifier(objective="binary:logistic", random_state=42)
 
-model.fit(X_train, y_train)
+
+model.fit(X_train, y_train, early_stopping_rounds=10, eval_metric="auc",
+eval_set=[(X_test, y_test)])
 
 with open(FAILURE_MODEL, 'wb') as f:
     pickle.dump(model, f)
 
 
+# Calculate performance scores 
+y_test_pred = model.predict(X_test)
+y_test_scores = np.amax(model.predict_proba(X_test), axis=1)
+
+from sklearn.metrics import precision_score, recall_score, f1_score, roc_curve
+model_precision_score = precision_score(y_test, y_test_pred)
+print("Precision Score: ", model_precision_score)
+
+model_recall_score = recall_score(y_test, y_test_pred)
+print("Recall Score: ", model_recall_score)
+
+model_f1_score = f1_score(y_test, y_test_pred)
+print("F1 Score: ", model_f1_score)
+
+def plot_roc_curve(fpr, tpr, label=None):
+    plt.plot(fpr, tpr, linewidth=2, label=label)
+    plt.plot([0,1], [0,1], 'k--')
+    plt.axis([0,1,0,1])
+    plt.xlabel('False Pasitive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.show()
+
+fpr, tpr, thresholds = roc_curve(y_test, y_test_scores)
+
+plot_roc_curve(fpr, tpr)
