@@ -8,7 +8,7 @@ TRAINING_DATA_STATIC_FILE = os.path.abspath('./data/training_data_static.csv')
 
 ## Create a traffic profile
 traffic_p = TrafficProfile()
-traffic_p.generate(5000)
+traffic_p.generate(3000)
 traffic_p.to_csv(TRAFIC_PROFILE_FILE)
 
 
