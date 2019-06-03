@@ -1,11 +1,11 @@
 import os
 import pandas as pd
 import numpy as np
-from sklearn import svm
+from sklearn.ensemble import RandomForestClassifier
 import pickle
 import matplotlib.pyplot as plt
 
-FAILURE_MODEL = os.path.abspath('FailureModels/saved_model/svm.pickle')
+FAILURE_MODEL = os.path.abspath('FailureModels/saved_model/random_forest.pickle')
 TRAINING_LOG = os.path.abspath('data/training_data_primary.csv')
 
 KEEP_COLUMNS = [
@@ -40,7 +40,7 @@ y_train = y[:train_stop]
 X_test = X[train_stop:]
 y_test = y[train_stop:]
 
-model = svm.SVC(gamma='scale', kernel='rbf')
+model = RandomForestClassifier(n_estimators=150, max_depth=20, random_state=42)
 model.fit(X_train, y_train)
 
 with open(FAILURE_MODEL, 'wb') as f:
@@ -50,7 +50,7 @@ with open(FAILURE_MODEL, 'wb') as f:
 
 # Calculate performance scores 
 y_test_pred = model.predict(X_test)
-y_test_scores = model.decision_function(X_test)
+y_test_scores = np.amax(model.predict_proba(X_test), axis=1)
 
 from sklearn.metrics import precision_score, recall_score, f1_score, roc_curve
 model_precision_score = precision_score(y_test, y_test_pred)

@@ -3,6 +3,7 @@ from FailureModels.Utility import get_train_test_split
 import os
 import pandas as pd
 import numpy as np
+import sklearn
 import matplotlib.pyplot as plt
 
 FAILURE_MODEL = os.path.abspath('FailureModels/saved_model/model')
@@ -34,14 +35,14 @@ print("Recall Score: ", model_recall_score)
 model_f1_score = f1_score(y_test, y_test_pred)
 print("F1 Score: ", model_f1_score)
 
-def plot_roc_curve(fpr, tpr, label=None):
-    plt.plot(fpr, tpr, linewidth=2, label=label)
-    plt.plot([0,1], [0,1], 'k--')
-    plt.axis([0,1,0,1])
-    plt.xlabel('False Pasitive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.show()
+# def plot_roc_curve(fpr, tpr, label=None):
+#     plt.plot(fpr, tpr, linewidth=2, label=label)
+#     plt.plot([0,1], [0,1], 'k--')
+#     plt.axis([0,1,0,1])
+#     plt.xlabel('False Pasitive Rate')
+#     plt.ylabel('True Positive Rate')
+#     plt.show()
 
-fpr, tpr, thresholds = roc_curve(y_test, y_test_scores)
+# fpr, tpr, thresholds = roc_curve(y_test, y_test_scores)
 
 plot_roc_curve(fpr, tpr)
