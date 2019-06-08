@@ -32,7 +32,6 @@ class LstmNet(object):
         
         with tf.name_scope('evaluation'):
             self.logits = tf.layers.dense(self.states[-1][0], self.n_outputs)
-            self.softmax = tf.nn.softmax(self.logits)
             self.output_class = tf.argmax(self.logits, axis=1)
             self.xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=self.y_tf, logits=self.logits)
             self.loss = tf.reduce_mean(self.xentropy)
@@ -91,13 +90,4 @@ class LstmNet(object):
             self.saver.restore(sess, self.log_dir + '/model')
 
             y_pred = sess.run(self.output_class, feed_dict={self.X_tf: X_pred, self.keep_prob: 1.0})
-            return y_pred
-
-    def predict_proba(self, X_pred, y_pred):
-        """returns the probability of each prediction"""
-        with tf.Session() as sess:
-            self.saver.restore(sess, self.log_dir + '/model')
-
-            y_pred = sess.run(self.softmax, feed_dict={self.X_tf: X_pred, self.y_tf: y_pred, self.keep_prob: 1.0})
-            return y_pred
-
+            return y_pred[0]
