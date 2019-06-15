@@ -31,13 +31,13 @@ while continue_loop:
         write_to_file(state_store)
         state_store = [ get_current_timestep(), 0, 0, 0, 0]
 
-    if keyboard.is_pressed('d'):
+    if keyboard.is_pressed('w'): # north
         state_store[1] = 1
-    if keyboard.is_pressed('f'):
+    if keyboard.is_pressed('s'): # south
         state_store[2] = 1
-    if keyboard.is_pressed('j'):
+    if keyboard.is_pressed('a'): # east (bottom left)
         state_store[3] = 1
-    if keyboard.is_pressed('k'):
+    if keyboard.is_pressed('d'): # south (top right)
         state_store[4] = 1
     if keyboard.is_pressed('p'):
         continue_loop=False
